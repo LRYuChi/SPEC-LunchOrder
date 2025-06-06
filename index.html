@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>午餐訂購管理系統</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- 登入頁面 -->
+    <div id="loginPage" class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <i class="fas fa-utensils login-icon"></i>
+                <h1>午餐訂購管理系統</h1>
+                <p>請輸入帳號密碼登入</p>
+            </div>
+            <div class="login-form">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-user"></i> 帳號
+                    </label>
+                    <input type="text" class="form-control" id="loginUsername" placeholder="請輸入帳號">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-lock"></i> 密碼
+                    </label>
+                    <input type="password" class="form-control" id="loginPassword" placeholder="請輸入密碼">
+                </div>
+                <button class="btn btn--primary btn--full-width" onclick="login()">
+                    <i class="fas fa-sign-in-alt"></i> 登入
+                </button>
+                <div id="loginError" class="login-error hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主系統頁面 -->
+    <div id="mainSystem" class="container hidden">
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-utensils"></i> 午餐訂購管理系統</h1>
+                <p class="header-date" id="currentDate"></p>
+            </div>
+            <button class="btn btn--outline btn--sm logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> 登出
+            </button>
+        </header>
+
+        <!-- 導航標籤 -->
+        <nav class="tabs">
+            <button class="tab-button active main-tab" data-tab="overview">
+                <i class="fas fa-chart-pie"></i>
+                <span>總覽</span>
+            </button>
+            <button class="tab-button order-tab" data-tab="orders">
+                <i class="fas fa-shopping-cart"></i>
+                <span>訂單輸入</span>
+            </button>
+            <button class="tab-button account-tab" data-tab="accounts">
+                <i class="fas fa-users"></i>
+                <span>帳戶管理</span>
+            </button>
+            <button class="tab-button history-tab" data-tab="history">
+                <i class="fas fa-history"></i>
+                <span>歷史查詢</span>
+            </button>
+            <button class="tab-button report-tab" data-tab="reports">
+                <i class="fas fa-file-alt"></i>
+                <span>報表統計</span>
+            </button>
+        </nav>
+
+        <!-- 總覽頁面 -->
+        <div id="overview" class="tab-content active">
+            <div class="overview-stats">
+                <div class="stat-card">
+                    <i class="fas fa-coins stat-icon"></i>
+                    <h3>總餘額</h3>
+                    <p class="stat-value" id="totalBalance">$0</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-users stat-icon"></i>
+                    <h3>帳戶狀態</h3>
+                    <div class="account-status">
+                        <span class="status-item status--success">
+                            <i class="fas fa-check-circle"></i>
+                            正常: <span id="normalCount">0</span>人
+                        </span>
+                        <span class="status-item status--warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            餘額低: <span id="lowCount">0</span>人
+                        </span>
+                        <span class="status-item status--error">
+                            <i class="fas fa-times-circle"></i>
+                            警示: <span id="warningCount">0</span>人
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recent-stores">
+                <h3><i class="fas fa-store"></i> 近七天訂餐店家統計</h3>
+                <div class="store-stats">
+                    <div class="store-category">
+                        <h4><i class="fas fa-hamburger"></i> 午餐店家</h4>
+                        <table class="stats-table">
+                            <thead>
+                                <tr>
+                                    <th>店家名稱</th>
+                                    <th>訂購次數</th>
+                                    <th>最後訂購日期</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lunchStoreStats"></tbody>
+                        </table>
+                    </div>
+                    <div class="store-category">
+                        <h4><i class="fas fa-coffee"></i> 飲料店家</h4>
+                        <table class="stats-table">
+                            <thead>
+                                <tr>
+                                    <th>店家名稱</th>
+                                    <th>訂購次數</th>
+                                    <th>最後訂購日期</th>
+                                </tr>
+                            </thead>
+                            <tbody id="drinkStoreStats"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 訂單輸入頁面 -->
+        <div id="orders" class="tab-content">
+            <!-- 當日店家設定 -->
+            <div class="toolbar store-toolbar">
+                <h4><i class="fas fa-store"></i> 當日店家設定</h4>
+                <div class="toolbar-group">
+                    <div class="input-with-icon">
+                        <i class="fas fa-hamburger"></i>
+                        <input type="text" class="form-control" id="dailyLunchStore" placeholder="請輸入午餐店家名稱">
+                    </div>
+                    <div class="input-with-icon">
+                        <i class="fas fa-coffee"></i>
+                        <input type="text" class="form-control" id="dailyDrinkStore" placeholder="請輸入飲料店家名稱">
+                    </div>
+                    <button class="btn btn--primary" onclick="setDailyStores()">
+                        <i class="fas fa-save"></i> 設定當日店家
+                    </button>
+                </div>
+            </div>
+
+            <!-- 訊息解析 -->
+            <div class="card message-card">
+                <div class="card__body">
+                    <h3><i class="fas fa-comment-alt"></i> 訊息解析</h3>
+                    <textarea class="form-control message-input" id="messageInput" rows="8" placeholder="請貼上訂購訊息...&#10;範例格式：&#10;07:52 邱偉育 日期: 6月4日 星期三&#10;姓名：邱偉育&#10;午餐：排骨飯&#10;飲料：金萱 無糖 微冰"></textarea>
+                    <button class="btn btn--primary mt-8" onclick="parseMessage()">
+                        <i class="fas fa-magic"></i> 解析訊息
+                    </button>
+                </div>
+            </div>
+
+            <!-- 解析結果表格 -->
+            <div id="parsedOrdersSection" class="card parsed-orders-card hidden">
+                <div class="card__body">
+                    <h3><i class="fas fa-table"></i> 解析結果 (可編輯金額)</h3>
+                    <div class="table-container">
+                        <table class="parsed-orders-table" id="parsedOrdersTable">
+                            <thead>
+                                <tr>
+                                    <th>姓名</th>
+                                    <th>午餐項目</th>
+                                    <th>午餐價格</th>
+                                    <th>飲料項目</th>
+                                    <th>飲料價格</th>
+                                    <th>小計</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="parsedOrdersBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="parsed-orders-actions">
+                        <button class="btn btn--success" onclick="confirmParsedOrders()">
+                            <i class="fas fa-check"></i> 確認加入訂單
+                        </button>
+                        <button class="btn btn--outline" onclick="clearParsedOrders()">
+                            <i class="fas fa-trash"></i> 清除解析結果
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 單筆新增 -->
+            <div class="card single-order-card">
+                <div class="card__body">
+                    <h3><i class="fas fa-plus"></i> 單筆新增</h3>
+                    <div class="order-form">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-user"></i> 姓名
+                            </label>
+                            <select class="form-control" id="orderUser">
+                                <option value="">請選擇同仁</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-hamburger"></i> 午餐項目
+                            </label>
+                            <input type="text" class="form-control" id="orderLunch" placeholder="午餐項目">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-dollar-sign"></i> 午餐價格
+                            </label>
+                            <input type="number" class="form-control" id="orderLunchPrice" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-coffee"></i> 飲料項目
+                            </label>
+                            <input type="text" class="form-control" id="orderDrink" placeholder="飲料項目">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-dollar-sign"></i> 飲料價格
+                            </label>
+                            <input type="number" class="form-control" id="orderDrinkPrice" placeholder="0">
+                        </div>
+                        <button class="btn btn--primary" onclick="addSingleOrder()">
+                            <i class="fas fa-plus-circle"></i> 新增訂單
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 訂單列表 -->
+            <div class="card orders-list-card">
+                <div class="card__body">
+                    <h3><i class="fas fa-list"></i> 今日訂單</h3>
+                    <div class="orders-list" id="ordersList"></div>
+                    <button class="btn btn--success btn--lg" onclick="processOrders()">
+                        <i class="fas fa-credit-card"></i> 確認扣款
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 帳戶管理頁面 -->
+        <div id="accounts" class="tab-content">
+            <!-- 新增同仁工具列 -->
+            <div class="toolbar add-employee-toolbar">
+                <h4><i class="fas fa-user-plus"></i> 新增同仁</h4>
+                <div class="toolbar-group">
+                    <div class="input-with-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" class="form-control" id="newEmployeeName" placeholder="同仁姓名">
+                    </div>
+                    <div class="input-with-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                        <input type="number" class="form-control" id="newEmployeeBalance" placeholder="初始餘額" value="0">
+                    </div>
+                    <button class="btn btn--primary" onclick="addEmployee()">
+                        <i class="fas fa-plus"></i> 新增同仁
+                    </button>
+                </div>
+            </div>
+
+            <!-- 帳戶加值工具列 -->
+            <div class="toolbar topup-toolbar">
+                <h4><i class="fas fa-coins"></i> 帳戶加值</h4>
+                <div class="toolbar-group">
+                    <div class="input-with-icon">
+                        <i class="fas fa-user"></i>
+                        <select class="form-control" id="topupUser">
+                            <option value="">選擇需要加值的同仁姓名</option>
+                        </select>
+                    </div>
+                    <div class="input-with-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                        <input type="number" class="form-control" id="topupAmount" placeholder="填寫金額">
+                    </div>
+                    <button class="btn btn--success" onclick="topupAccount()">
+                        <i class="fas fa-plus-circle"></i> 執行加值
+                    </button>
+                </div>
+            </div>
+
+            <!-- 排序控制 -->
+            <div class="sort-controls">
+                <label class="form-label">
+                    <i class="fas fa-sort"></i> 餘額排序
+                </label>
+                <select class="form-control sort-select" id="balanceSort" onchange="sortAccounts()">
+                    <option value="default">預設順序</option>
+                    <option value="high-to-low">金額多到少</option>
+                    <option value="low-to-high">金額少到多</option>
+                </select>
+            </div>
+
+            <!-- 帳戶卡片網格 -->
+            <div class="accounts-grid" id="accountsGrid"></div>
+        </div>
+
+        <!-- 歷史查詢頁面 -->
+        <div id="history" class="tab-content">
+            <div class="card history-card">
+                <div class="card__body">
+                    <h3><i class="fas fa-search"></i> 歷史查詢</h3>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-calendar"></i> 查詢日期
+                        </label>
+                        <input type="date" class="form-control" id="queryDate">
+                        <button class="btn btn--primary mt-8" onclick="queryHistory()">
+                            <i class="fas fa-search"></i> 查詢
+                        </button>
+                    </div>
+                    <div id="historyResults"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 報表統計頁面 -->
+        <div id="reports" class="tab-content">
+            <!-- 當日報表 -->
+            <div class="card report-card">
+                <div class="card__body">
+                    <div class="report-header">
+                        <h3><i class="fas fa-chart-bar"></i> 當日報表</h3>
+                        <button class="btn btn--secondary no-print" onclick="printReport()">
+                            <i class="fas fa-print"></i> 列印報表
+                        </button>
+                    </div>
+                    <div id="dailyReport" class="daily-report"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 個人明細彈窗 -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">
+                    <i class="fas fa-user"></i> 個人明細
+                </h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
