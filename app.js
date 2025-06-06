@@ -1,3 +1,5 @@
+import { app, analytics } from './firebaseConfig';
+
 // 登入憑證
 const loginCredentials = {
     "admin": "password123",
